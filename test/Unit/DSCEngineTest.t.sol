@@ -82,35 +82,18 @@ contract DSCEngineTest is Test {
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
 
-    event CollateralTokenAdded(
-        address indexed token, address indexed priceFeed, uint8 tokenDecimals, uint8 feedDecimals
-    );
+    event CollateralTokenAdded(address indexed token, address indexed priceFeed, uint8 tokenDecimals, uint8 feedDecimals);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     event DscMinted(address indexed user, uint256 amount);
     event DscBurned(address indexed onBehalfOf, address indexed dscFrom, uint256 amount, bool wasFlashRepayment);
     event CollateralDeposited(address indexed user, address indexed weth, uint256 indexed STARTING_USER_BALANCE);
-    event CollateralRedeemed(
-        address indexed redeemFrom, address indexed redeemTo, address indexed token, uint256 amount
-    );
-    event Liquidation(
-        address indexed liquidator,
-        address indexed user,
-        address indexed collateral,
-        uint256 debtBurned,
-        uint256 collateralSeized
-    );
+    event CollateralRedeemed(address indexed redeemFrom, address indexed redeemTo, address indexed token, uint256 amount);
+    event Liquidation(address indexed liquidator, address indexed user, address indexed collateral, uint256 debtBurned, uint256 collateralSeized);
 
     event FlashMinterDeployed(address engine, address token);
 
-    event FlashLoanExecuted(
-        address indexed initiator,
-        address indexed receiver,
-        address indexed token,
-        uint256 amount,
-        uint256 fee,
-        address feeRecipient
-    );
+    event FlashLoanExecuted(address indexed initiator, address indexed receiver, address indexed token, uint256 amount, uint256 fee, address feeRecipient);
 
     event FlashMinterUpdated(address indexed newFlashMinter);
 
@@ -127,8 +110,7 @@ contract DSCEngineTest is Test {
 
         (dsc, dsce, helperConfig, flashMinter) = deployer.run();
 
-        (ethUsdPriceFeed, btcUsdPriceFeed, weth, wbtc, deployerKey, wethMaxPriceAge, wbtcMaxPriceAge) =
-            helperConfig.activeNetworkConfig();
+        (ethUsdPriceFeed, btcUsdPriceFeed, weth, wbtc, deployerKey, wethMaxPriceAge, wbtcMaxPriceAge) = helperConfig.activeNetworkConfig();
 
         if (block.chainid == 31_337) {
             // Local Anvil
@@ -144,7 +126,7 @@ contract DSCEngineTest is Test {
         } else {
             // Sepolia
             weth = 0xdd13E55209Fd76AfE204dBda4007C227904f0a81; // WETH9 on Sepolia
-                // wbtc = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // Testnet WBTC
+            // wbtc = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // Testnet WBTC
 
             // give user some ETH to wrap into WETH
             vm.deal(user, STARTING_USER_BALANCE);
@@ -380,8 +362,7 @@ contract DSCEngineTest is Test {
 
         uint256 normalizedPrice = (uint256(price) * dsce.getPrecision()) / (dsce.getBaseTen() ** feedDec);
 
-        uint256 expectedWeth =
-            Math.mulDiv(usdAmount, dsce.getBaseTen() ** tokenDec, normalizedPrice, Math.Rounding.Ceil);
+        uint256 expectedWeth = Math.mulDiv(usdAmount, dsce.getBaseTen() ** tokenDec, normalizedPrice, Math.Rounding.Ceil);
 
         uint256 actualWeth = dsce.getTokenAmountFromUsd(weth, usdAmount);
         assertEq(actualWeth, expectedWeth);
@@ -438,8 +419,8 @@ contract DSCEngineTest is Test {
         // User deposits 1 WBTC and mints corresponding DSC.
         vm.startPrank(user);
         uint256 amountWbtcDeposited = 1 * dsce.getBaseTen() ** wbtcDecimals; // 1 WBTC
-            // This was the flaw WBTC has 8 decimals, so naive calculations can misprice it. Here we scale with protocol
-            // precision.
+        // This was the flaw WBTC has 8 decimals, so naive calculations can misprice it. Here we scale with protocol
+        // precision.
         uint256 expectedValueWbtc = 30_000 * dsce.getPrecision(); // that used to be( $0.000003 != $30,000)
         uint256 amountDscFromWbtc = (expectedValueWbtc * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
 
@@ -627,8 +608,7 @@ contract DSCEngineTest is Test {
         tokenAddresses = [weth];
         priceFeedAddresses = [ethUsdPriceFeed];
 
-        DSCEngine mockDsce =
-            new DSCEngine(tokenAddresses, priceFeedAddresses, address(mockFailedMintDSC), vm.addr(deployerKey));
+        DSCEngine mockDsce = new DSCEngine(tokenAddresses, priceFeedAddresses, address(mockFailedMintDSC), vm.addr(deployerKey));
 
         // Transfer DSC ownership to engine
         vm.prank(owner);
@@ -704,9 +684,7 @@ contract DSCEngineTest is Test {
         uint256 collateralUsd = dsce.getAccountCollateralValue(user);
         assertLt(collateralUsd, minPosition);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(DSCEngine.DSCEngine__BelowMinPositionValue.selector, collateralUsd, minPosition)
-        );
+        vm.expectRevert(abi.encodeWithSelector(DSCEngine.DSCEngine__BelowMinPositionValue.selector, collateralUsd, minPosition));
         dsce.mintDsc(1e18);
         vm.stopPrank();
     }
@@ -731,9 +709,7 @@ contract DSCEngineTest is Test {
         vm.startPrank(user);
         ERC20MintableBurnableDecimals(address(mockCollateralToken)).approve(address(mockDsce), amountCollateral);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(SafeERC20.SafeERC20FailedOperation.selector, address(mockCollateralToken))
-        );
+        vm.expectRevert(abi.encodeWithSelector(SafeERC20.SafeERC20FailedOperation.selector, address(mockCollateralToken)));
         mockDsce.depositCollateral(address(mockCollateralToken), amountCollateral);
 
         vm.stopPrank();
@@ -841,7 +817,7 @@ contract DSCEngineTest is Test {
 
     function testHealthFactorCanGoBelowOne() public depositedCollateralAndMintDsc {
         int256 ethUsdUpdatedPrice = 18e8; // 1 ETH = $18
-            //we need $200 at all times if we have $100 of debt
+        //we need $200 at all times if we have $100 of debt
 
         MockV3Aggregator(ethUsdPriceFeed).updateAnswer(ethUsdUpdatedPrice);
 
@@ -1112,10 +1088,7 @@ contract DSCEngineTest is Test {
     function testLiquidationPayoutIsCorrect() public liquidated {
         uint256 liquidatorWethBalance = ERC20Mock(weth).balanceOf(liquidator);
 
-        uint256 expectedWeth = dsce.getTokenAmountFromUsd(weth, amountToMint)
-            + (dsce.getTokenAmountFromUsd(weth, amountToMint)
-                * dsce.getLiquidationBonus()
-                / dsce.getLiquidationPrecision());
+        uint256 expectedWeth = dsce.getTokenAmountFromUsd(weth, amountToMint) + (dsce.getTokenAmountFromUsd(weth, amountToMint) * dsce.getLiquidationBonus() / dsce.getLiquidationPrecision());
         console.log(expectedWeth, ":The expected weth amount");
         uint256 hardCodedExpected = 6_111_111_111_111_111_111;
         assertEq(liquidatorWethBalance, expectedWeth);
@@ -1123,10 +1096,7 @@ contract DSCEngineTest is Test {
     }
 
     function testUserStillHasSomeEthAfterLiquidation() public liquidated {
-        uint256 amountLiquidated = dsce.getTokenAmountFromUsd(weth, amountToMint)
-            + (dsce.getTokenAmountFromUsd(weth, amountToMint)
-                * dsce.getLiquidationBonus()
-                / dsce.getLiquidationPrecision());
+        uint256 amountLiquidated = dsce.getTokenAmountFromUsd(weth, amountToMint) + (dsce.getTokenAmountFromUsd(weth, amountToMint) * dsce.getLiquidationBonus() / dsce.getLiquidationPrecision());
 
         uint256 usdAmountLiquidated = dsce.getUsdValue(weth, amountLiquidated);
         uint256 expectedUserCollateralValueInUsd = dsce.getUsdValue(weth, amountCollateral) - (usdAmountLiquidated);
@@ -1225,13 +1195,7 @@ contract DSCEngineTest is Test {
         dsce.depositCollateralAndMintDsc(weth, collateralToCover, amountToMint);
         dsc.approve(address(dsce), debtToCover);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                DSCEngine.DSCEngine__RemainingDebtBelowMinThreshold.selector,
-                remainingDebt,
-                dsce.getMinDebtThreshold(weth)
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(DSCEngine.DSCEngine__RemainingDebtBelowMinThreshold.selector, remainingDebt, dsce.getMinDebtThreshold(weth)));
         dsce.liquidate(weth, user, debtToCover);
         vm.stopPrank();
     }
@@ -1361,11 +1325,7 @@ contract DSCEngineTest is Test {
         assertLt(remainingDebt, minDebtThreshold);
         assertGt(remainingDebt, 0);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                DSCEngine.DSCEngine__RemainingDebtBelowMinThreshold.selector, remainingDebt, minDebtThreshold
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(DSCEngine.DSCEngine__RemainingDebtBelowMinThreshold.selector, remainingDebt, minDebtThreshold));
         dsce.liquidate(weth, user, secondDebtToCover);
 
         vm.stopPrank();
@@ -1851,11 +1811,7 @@ contract DSCEngineTest is Test {
         assertEq(remainingAfterSecond, 40e18);
         assertLt(remainingAfterSecond, minDebtThreshold);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                DSCEngine.DSCEngine__RemainingDebtBelowMinThreshold.selector, remainingAfterSecond, minDebtThreshold
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(DSCEngine.DSCEngine__RemainingDebtBelowMinThreshold.selector, remainingAfterSecond, minDebtThreshold));
         dsce.batchLiquidate(weth, usersArr, debtsArr);
         vm.stopPrank();
 
@@ -1901,8 +1857,7 @@ contract DSCEngineTest is Test {
         uint256 debtToCover = dsce.maxFlashLoan(address(dsc));
         assertGt(debtToCover, 0, "no headroom for flash liquidation");
 
-        MockFlashLiquidator liq =
-            new MockFlashLiquidator(address(dsce), address(flashMinter), address(dsc), weth, address(dex), user);
+        MockFlashLiquidator liq = new MockFlashLiquidator(address(dsce), address(flashMinter), address(dsc), weth, address(dex), user);
 
         // prove we actually call liquidate()
         vm.expectCall(address(dsce), abi.encodeWithSelector(DSCEngine.liquidate.selector, weth, user, debtToCover));
@@ -1954,8 +1909,7 @@ contract DSCEngineTest is Test {
         uint256 headroom = dsce.maxFlashLoan(address(dsc));
         assertGe(headroom, debtBefore, "not enough flash headroom for full liquidation");
 
-        MockFlashLiquidator liq =
-            new MockFlashLiquidator(address(dsce), address(flashMinter), address(dsc), weth, address(dex), user);
+        MockFlashLiquidator liq = new MockFlashLiquidator(address(dsce), address(flashMinter), address(dsc), weth, address(dex), user);
 
         // Prove we actually call liquidate()
         vm.expectCall(address(dsce), abi.encodeWithSelector(DSCEngine.liquidate.selector, weth, user, debtBefore));
@@ -1997,8 +1951,7 @@ contract DSCEngineTest is Test {
         uint256 headroom = dsce.maxFlashLoan(address(dsc));
         assertLt(headroom, debtBefore, "this test assumes insufficient headroom");
 
-        MockFlashLiquidator liq =
-            new MockFlashLiquidator(address(dsce), address(flashMinter), address(dsc), weth, address(dex), user);
+        MockFlashLiquidator liq = new MockFlashLiquidator(address(dsce), address(flashMinter), address(dsc), weth, address(dex), user);
 
         vm.expectRevert(FlashMintDWebThreePavlou.FlashMint__AmountTooLarge.selector);
         flashMinter.flashLoan(IERC3156FlashBorrower(address(liq)), address(dsc), debtBefore, hex"");
@@ -2036,8 +1989,7 @@ contract DSCEngineTest is Test {
         uint256 headroom = dsce.maxFlashLoan(address(dsc));
         assertGe(headroom, debtBefore, "need headroom so failure is due to DEX liquidity");
 
-        MockFlashLiquidator liq =
-            new MockFlashLiquidator(address(dsce), address(flashMinter), address(dsc), weth, address(dex), user);
+        MockFlashLiquidator liq = new MockFlashLiquidator(address(dsce), address(flashMinter), address(dsc), weth, address(dex), user);
 
         // swap will fail with ERC20 insufficient balance inside DEX
         vm.expectRevert();
@@ -2330,9 +2282,7 @@ contract DSCEngineTest is Test {
         vm.prank(address(flashMinter));
         dsc.mint(address(borrower), repayAmount);
 
-        flashMinter.flashLoan(
-            IERC3156FlashBorrower(address(borrower)), address(dsce.getDsc()), FLASH_LOAN_AMOUNT, arbitraryData
-        );
+        flashMinter.flashLoan(IERC3156FlashBorrower(address(borrower)), address(dsce.getDsc()), FLASH_LOAN_AMOUNT, arbitraryData);
 
         // Asserts
 
@@ -2349,7 +2299,10 @@ contract DSCEngineTest is Test {
         flashMinter.flashLoan(borrower, address(dsc), MAX_FLASH_MINT_AMOUNT + 1, hex"");
     }
 
-    function _performFlashLoan(MockFlashBorrower borrower, bytes memory userData) internal returns (bool) {
+    function _performFlashLoan(
+        MockFlashBorrower borrower,
+        bytes memory userData
+    ) internal returns (bool) {
         uint256 expectedFee = dsce.flashFee(address(dsc), FLASH_LOAN_AMOUNT);
 
         // Borrower will receive principal from the flashLoan mint,
@@ -2360,8 +2313,7 @@ contract DSCEngineTest is Test {
         }
 
         // initiator can be whoever
-        return
-            flashMinter.flashLoan(IERC3156FlashBorrower(address(borrower)), address(dsc), FLASH_LOAN_AMOUNT, userData);
+        return flashMinter.flashLoan(IERC3156FlashBorrower(address(borrower)), address(dsc), FLASH_LOAN_AMOUNT, userData);
     }
 
     function testFlashLoanRevertsOnBadToken() public {
@@ -2756,11 +2708,7 @@ contract DSCEngineTest is Test {
 
     function testFlashLoanSelectorIsCorrect() public view {
         bytes4 selector = flashMinter.flashLoan.selector;
-        assertEq(
-            selector,
-            bytes4(keccak256("flashLoan(address,address,uint256,bytes)")),
-            "flashLoan function should have correct selector"
-        );
+        assertEq(selector, bytes4(keccak256("flashLoan(address,address,uint256,bytes)")), "flashLoan function should have correct selector");
     }
 
     function testFlashLoanWithDifferentInitiatorAndReceiver() public {
@@ -2996,11 +2944,7 @@ contract DSCEngineTest is Test {
         address expectedInitiator,
         address expectedReceiver,
         address expectedToken
-    )
-        internal
-        view
-        returns (uint256 count, uint256 sumAmount, uint256 sumFee, address feeRecipient)
-    {
+    ) internal view returns (uint256 count, uint256 sumAmount, uint256 sumFee, address feeRecipient) {
         // matches your trace: FlashLoanExecuted(..., feeRecipient)
         bytes32 sig = keccak256("FlashLoanExecuted(address,address,address,uint256,uint256,address)");
 
@@ -3049,8 +2993,7 @@ contract DSCEngineTest is Test {
         Vm.Log[] memory logs = vm.getRecordedLogs();
 
         // Assert: FlashLoanExecuted emitted exactly once
-        (uint256 count, uint256 sumAmount, uint256 sumFee, address feeRecipient) =
-            _flashLoanExecutedStats(logs, exploiter, address(borrower), address(dsc));
+        (uint256 count, uint256 sumAmount, uint256 sumFee, address feeRecipient) = _flashLoanExecutedStats(logs, exploiter, address(borrower), address(dsc));
 
         assertEq(count, 1, "FlashLoanExecuted should be emitted once");
         assertEq(sumAmount, amount, "sum amount should equal principal");
@@ -3128,8 +3071,7 @@ contract DSCEngineTest is Test {
         // MockDex is required by your MockFlashLiquidator constructor; it won't be used (revert happens earlier)
         MockDex dex = new MockDex(weth, address(dsc), 20e18);
 
-        MockFlashLiquidator flashLiq =
-            new MockFlashLiquidator(address(dsce), address(flashMinter), address(dsc), weth, address(dex), user);
+        MockFlashLiquidator flashLiq = new MockFlashLiquidator(address(dsce), address(flashMinter), address(dsc), weth, address(dex), user);
 
         // Snapshot balances (ensure no collateral leakage)
         uint256 liqWethBefore = IERC20(weth).balanceOf(address(flashLiq));
@@ -3227,8 +3169,7 @@ contract DSCEngineTest is Test {
         IERC20(address(dsc)).transfer(address(dex), lpMint);
 
         // --- Flash liquidator borrower (dex-aware mock) ---
-        MockFlashLiquidator flashLiq =
-            new MockFlashLiquidator(address(dsce), address(flashMinter), address(dsc), weth, address(dex), user);
+        MockFlashLiquidator flashLiq = new MockFlashLiquidator(address(dsce), address(flashMinter), address(dsc), weth, address(dex), user);
 
         // Act: flashLoan -> callback -> liquidation -> swap -> repay
         bytes memory data = abi.encode(user, weth, userDebt);

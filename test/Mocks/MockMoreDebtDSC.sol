@@ -59,14 +59,13 @@ contract MockMoreDebtDSC is ERC20Burnable, Ownable {
     constructor(
         address _mockAggregator,
         address _initialOwner
-    )
-        ERC20("DWebThreePavlouSC", "DWTPSC")
-        Ownable(_initialOwner)
-    {
+    ) ERC20("DWebThreePavlouSC", "DWTPSC") Ownable(_initialOwner) {
         mockAggregator = _mockAggregator;
     }
 
-    function burn(uint256 _amount) public override onlyOwner {
+    function burn(
+        uint256 _amount
+    ) public override onlyOwner {
         // We crash the price
         MockV3Aggregator(mockAggregator).updateAnswer(1e8);
         uint256 balance = balanceOf(msg.sender);
@@ -79,7 +78,10 @@ contract MockMoreDebtDSC is ERC20Burnable, Ownable {
         super.burn(_amount);
     }
 
-    function mint(address _to, uint256 _amount) external onlyOwner returns (bool) {
+    function mint(
+        address _to,
+        uint256 _amount
+    ) external onlyOwner returns (bool) {
         if (_to == address(0)) {
             revert DecentralizedStableCoin__NotZeroAddress();
         }

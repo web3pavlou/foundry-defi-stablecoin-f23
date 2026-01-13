@@ -6,7 +6,11 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 contract ERC20MintableBurnableDecimals is ERC20 {
     uint8 private immutable _decimals;
 
-    constructor(string memory name, string memory symbol, uint8 decimals_) ERC20(name, symbol) {
+    constructor(
+        string memory name,
+        string memory symbol,
+        uint8 decimals_
+    ) ERC20(name, symbol) {
         _decimals = decimals_;
     }
 
@@ -14,11 +18,17 @@ contract ERC20MintableBurnableDecimals is ERC20 {
         return _decimals;
     }
 
-    function mint(address to, uint256 amount) public {
+    function mint(
+        address to,
+        uint256 amount
+    ) public {
         _mint(to, amount);
     }
 
-    function burn(address account, uint256 amount) external {
+    function burn(
+        address account,
+        uint256 amount
+    ) external {
         _burn(account, amount);
     }
 }

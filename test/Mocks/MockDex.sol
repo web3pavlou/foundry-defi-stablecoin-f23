@@ -14,13 +14,20 @@ contract MockDex {
     // out = wethIn * dscPerWeth / 1e18
     uint256 public immutable dscPerWeth;
 
-    constructor(address weth, address dsc, uint256 _dscPerWeth) {
+    constructor(
+        address weth,
+        address dsc,
+        uint256 _dscPerWeth
+    ) {
         WETH = IERC20(weth);
         DSC = IERC20(dsc);
         dscPerWeth = _dscPerWeth;
     }
 
-    function swapWethForDsc(uint256 wethIn, address recipient) external returns (uint256 out) {
+    function swapWethForDsc(
+        uint256 wethIn,
+        address recipient
+    ) external returns (uint256 out) {
         WETH.safeTransferFrom(msg.sender, address(this), wethIn);
         out = (wethIn * dscPerWeth) / 1e18;
         DSC.safeTransfer(recipient, out);

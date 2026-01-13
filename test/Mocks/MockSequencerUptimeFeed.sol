@@ -7,7 +7,10 @@ contract MockSequencerUptimeFeed is AggregatorV3Interface {
     int256 private s_answer; // 0 = up, 1 = down
     uint256 private s_startedAt; // when this status started
 
-    function setStatus(int256 answer, uint256 startedAt) external {
+    function setStatus(
+        int256 answer,
+        uint256 startedAt
+    ) external {
         s_answer = answer;
         s_startedAt = startedAt;
     }
@@ -31,7 +34,9 @@ contract MockSequencerUptimeFeed is AggregatorV3Interface {
         return 0;
     }
 
-    function getRoundData(uint80) external pure override returns (uint80, int256, uint256, uint256, uint80) {
+    function getRoundData(
+        uint80
+    ) external pure override returns (uint80, int256, uint256, uint256, uint80) {
         revert("not implemented");
     }
 }

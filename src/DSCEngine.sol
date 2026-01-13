@@ -114,28 +114,18 @@ contract DSCEngine is ReentrancyGuard, Ownable {
     DWebThreePavlouStableCoin private immutable i_dsc; // The stablecoin token contract (ERC20) managed by this engine
 
     address private immutable i_flashFeeRecipient; // sets the engine as the administrative authority of the
-        // surplus (fee)s
+    // surplus (fee)s
 
     //////////////
     // Events   //
     //////////////
 
-    event CollateralTokenAdded(
-        address indexed token, address indexed priceFeed, uint8 tokenDecimals, uint8 feedDecimals
-    );
+    event CollateralTokenAdded(address indexed token, address indexed priceFeed, uint8 tokenDecimals, uint8 feedDecimals);
     event DscMinted(address indexed user, uint256 amount);
     event CollateralDeposited(address indexed user, address indexed token, uint256 indexed amount);
-    event CollateralRedeemed(
-        address indexed redeemFrom, address indexed redeemTo, address indexed token, uint256 amount
-    );
+    event CollateralRedeemed(address indexed redeemFrom, address indexed redeemTo, address indexed token, uint256 amount);
     event DscBurned(address indexed onBehalfOf, address indexed dscFrom, uint256 amount, bool wasFlashRepayment);
-    event Liquidation(
-        address indexed liquidator,
-        address indexed user,
-        address indexed collateral,
-        uint256 debtBurned,
-        uint256 collateralSeized
-    );
+    event Liquidation(address indexed liquidator, address indexed user, address indexed collateral, uint256 debtBurned, uint256 collateralSeized);
     event MinPositionValueUsdChanged(uint256 indexed newMinPositionValueUsd);
     event MinDebtThresholdUpdated(address indexed token, uint256 indexed newMinDebtThresholdUsd);
 
@@ -148,14 +138,18 @@ contract DSCEngine is ReentrancyGuard, Ownable {
     // Modifiers //
     ///////////////
 
-    modifier moreThanZero(uint256 amount) {
+    modifier moreThanZero(
+        uint256 amount
+    ) {
         if (amount == 0) {
             revert DSCEngine__NeedsMoreThanZero();
         }
         _;
     }
 
-    modifier isAllowedToken(address token) {
+    modifier isAllowedToken(
+        address token
+    ) {
         if (s_priceFeeds[token] == address(0)) {
             revert DSCEngine__NotAllowedToken();
         }
@@ -182,9 +176,7 @@ contract DSCEngine is ReentrancyGuard, Ownable {
         address[] memory priceFeedAddresses,
         address dscAddress,
         address initialOwner
-    )
-        Ownable(initialOwner)
-    {
+    ) Ownable(initialOwner) {
         if (tokenAddresses.length != priceFeedAddresses.length) {
             revert DSCEngine__TokenAddressesAndPriceFeedAddressesMustBeSameLength();
         }
@@ -230,9 +222,7 @@ contract DSCEngine is ReentrancyGuard, Ownable {
         address tokenCollateralAddress,
         uint256 amountCollateral,
         uint256 amountDscToMint
-    )
-        external
-    {
+    ) external {
         depositCollateral(tokenCollateralAddress, amountCollateral);
         mintDsc(amountDscToMint);
     }
@@ -244,12 +234,7 @@ contract DSCEngine is ReentrancyGuard, Ownable {
     function depositCollateral(
         address tokenCollateralAddress,
         uint256 amountCollateral
-    )
-        public
-        nonReentrant
-        moreThanZero(amountCollateral)
-        isAllowedToken(tokenCollateralAddress)
-    {
+    ) public nonReentrant moreThanZero(amountCollateral) isAllowedToken(tokenCollateralAddress) {
         s_collateralDeposited[msg.sender][tokenCollateralAddress] += amountCollateral;
         emit CollateralDeposited(msg.sender, tokenCollateralAddress, amountCollateral);
         IERC20(tokenCollateralAddress).safeTransferFrom(msg.sender, address(this), amountCollateral);
@@ -262,7 +247,9 @@ contract DSCEngine is ReentrancyGuard, Ownable {
      *  @dev Increases debt (DSC minted) and issues new stablecoins to the account.
      * Requires that your collateral value is at least `s_minPositionValueUsd` (e.g. $250) and hf >= 1.
      */
-    function mintDsc(uint256 amountDscToMint) public moreThanZero(amountDscToMint) nonReentrant {
+    function mintDsc(
+        uint256 amountDscToMint
+    ) public moreThanZero(amountDscToMint) nonReentrant {
         uint256 collateralValueInUsd = getAccountCollateralValue(msg.sender);
         if (collateralValueInUsd < s_minPositionValueUsd) {
             revert DSCEngine__BelowMinPositionValue(collateralValueInUsd, s_minPositionValueUsd);
@@ -282,7 +269,9 @@ contract DSCEngine is ReentrancyGuard, Ownable {
      * @notice Burn DWTPSC from your account to reduce your debt.
      * @param amount The amount of DWTPSC to burn
      */
-    function burnDsc(uint256 amount) public moreThanZero(amount) nonReentrant {
+    function burnDsc(
+        uint256 amount
+    ) public moreThanZero(amount) nonReentrant {
         _burnDsc(amount, msg.sender, msg.sender);
     }
 
@@ -297,13 +286,7 @@ contract DSCEngine is ReentrancyGuard, Ownable {
         address tokenCollateralAddress,
         uint256 amountCollateral,
         uint256 amountDscToBurn
-    )
-        external
-        nonReentrant
-        moreThanZero(amountCollateral)
-        moreThanZero(amountDscToBurn)
-        isAllowedToken(tokenCollateralAddress)
-    {
+    ) external nonReentrant moreThanZero(amountCollateral) moreThanZero(amountDscToBurn) isAllowedToken(tokenCollateralAddress) {
         _burnDsc(amountDscToBurn, msg.sender, msg.sender);
         _redeemCollateral(tokenCollateralAddress, amountCollateral, msg.sender, msg.sender);
         _revertIfHealthFactorIsBroken(msg.sender);
@@ -318,12 +301,7 @@ contract DSCEngine is ReentrancyGuard, Ownable {
     function redeemCollateral(
         address tokenCollateralAddress,
         uint256 amountCollateral
-    )
-        public
-        nonReentrant
-        moreThanZero(amountCollateral)
-        isAllowedToken(tokenCollateralAddress)
-    {
+    ) public nonReentrant moreThanZero(amountCollateral) isAllowedToken(tokenCollateralAddress) {
         _redeemCollateral(tokenCollateralAddress, amountCollateral, msg.sender, msg.sender);
         _revertIfHealthFactorIsBroken(msg.sender);
     }
@@ -351,12 +329,7 @@ contract DSCEngine is ReentrancyGuard, Ownable {
         address collateral,
         address user,
         uint256 debtToCover
-    )
-        external
-        nonReentrant
-        isAllowedToken(collateral)
-        moreThanZero(debtToCover)
-    {
+    ) external nonReentrant isAllowedToken(collateral) moreThanZero(debtToCover) {
         _liquidateInternal(collateral, user, debtToCover);
     }
 
@@ -375,11 +348,7 @@ contract DSCEngine is ReentrancyGuard, Ownable {
         address collateral,
         address[] memory users,
         uint256[] memory debtsToCover
-    )
-        external
-        nonReentrant
-        isAllowedToken(collateral)
-    {
+    ) external nonReentrant isAllowedToken(collateral) {
         uint256 len = users.length;
         if (len == 0) {
             revert DSCEngine__BatchEmpty();
@@ -401,7 +370,9 @@ contract DSCEngine is ReentrancyGuard, Ownable {
     // Flash Minting     //
     ///////////////////////
 
-    function burnProtocolFees(uint256 amount) external onlyOwner {
+    function burnProtocolFees(
+        uint256 amount
+    ) external onlyOwner {
         i_dsc.burn(amount); // burns from DSCEngine balance
     }
 
@@ -416,11 +387,9 @@ contract DSCEngine is ReentrancyGuard, Ownable {
      * positions below this value. Useful to adjust based on gas costs or risk considerations.
      */
 
-    function setMinPositionValueUsd(uint256 newMinPositionValueUsd)
-        external
-        onlyOwner
-        moreThanZero(newMinPositionValueUsd)
-    {
+    function setMinPositionValueUsd(
+        uint256 newMinPositionValueUsd
+    ) external onlyOwner moreThanZero(newMinPositionValueUsd) {
         s_minPositionValueUsd = newMinPositionValueUsd;
         emit MinPositionValueUsdChanged(newMinPositionValueUsd);
     }
@@ -439,11 +408,7 @@ contract DSCEngine is ReentrancyGuard, Ownable {
     function setMinDebtThreshold(
         address token,
         uint256 minDebtThreshold
-    )
-        external
-        onlyOwner
-        isAllowedToken(token)
-    {
+    ) external onlyOwner isAllowedToken(token) {
         s_minDebtThreshold[token] = minDebtThreshold;
         emit MinDebtThresholdUpdated(token, minDebtThreshold);
     }
@@ -455,7 +420,9 @@ contract DSCEngine is ReentrancyGuard, Ownable {
      * Cannot exceed 10,000 (100%).
      */
 
-    function setFlashFeeBps(uint256 newFlashFeeBps) external onlyOwner {
+    function setFlashFeeBps(
+        uint256 newFlashFeeBps
+    ) external onlyOwner {
         if (newFlashFeeBps > BPS_PRECISION) {
             revert DSCEngine__InvalidFlashFeeBps(newFlashFeeBps);
         }
@@ -473,7 +440,9 @@ contract DSCEngine is ReentrancyGuard, Ownable {
      * contract (DSCEngine must be the token owner for this to succeed).
      */
 
-    function setFlashMinter(address newMinter) external onlyOwner {
+    function setFlashMinter(
+        address newMinter
+    ) external onlyOwner {
         if (newMinter == address(0)) revert DSCEngine__InvalidFlashMinter();
         //the address must be a deployed contract
         if (newMinter.code.length == 0) revert DSCEngine__InvalidFlashMinter();
@@ -503,7 +472,10 @@ contract DSCEngine is ReentrancyGuard, Ownable {
      * Emits a `MaxPriceAgeUpdated` event.
      */
 
-    function setMaxPriceAge(address token, uint256 maxPriceAge) external onlyOwner isAllowedToken(token) {
+    function setMaxPriceAge(
+        address token,
+        uint256 maxPriceAge
+    ) external onlyOwner isAllowedToken(token) {
         if (maxPriceAge == 0) {
             revert DSCEngine__MaxPriceAgeMustBeMoreThanZero();
         }
@@ -515,7 +487,11 @@ contract DSCEngine is ReentrancyGuard, Ownable {
     // Private and Internal Functions //
     ////////////////////////////////////
 
-    function _liquidateInternal(address collateral, address user, uint256 debtToCover) internal {
+    function _liquidateInternal(
+        address collateral,
+        address user,
+        uint256 debtToCover
+    ) internal {
         // 1. Check target user is actually liquidatable, Can't liquidate a healthy position (HF >= 1)
         uint256 startingUserHealthFactor = _healthFactor(user);
         if (startingUserHealthFactor >= MIN_HEALTH_FACTOR) {
@@ -561,19 +537,17 @@ contract DSCEngine is ReentrancyGuard, Ownable {
         // maximum available. This avoids a situation where a user at 105% collateralization (just above 100% debt)
         // could not be liquidated at all
         if (totalCollateralToRedeem > totalDepositedCollateral) {
-            uint256 availableBonus = totalDepositedCollateral > tokenAmountFromDebtCovered
-                ? totalDepositedCollateral - tokenAmountFromDebtCovered
-                : 0;
+            uint256 availableBonus = totalDepositedCollateral > tokenAmountFromDebtCovered ? totalDepositedCollateral - tokenAmountFromDebtCovered : 0;
 
             totalCollateralToRedeem = tokenAmountFromDebtCovered + availableBonus;
         }
 
         // 4. Effects / Interactions
         _redeemCollateral(collateral, totalCollateralToRedeem, user, msg.sender); // Decrease user's collateral and send
-            // the calculated amount to the liquidator
+        // the calculated amount to the liquidator
 
         _burnDsc(actualDebtToBurn, user, msg.sender); //Burn actualDebtToBurn DSC from the liquidator to reduce the
-            // user's debt by that amount. The liquidator must have provided this DSC
+        // user's debt by that amount. The liquidator must have provided this DSC
 
         // 5. Ensure the liquidation actually improved the user's health factor (it should in all valid cases).
         uint256 endingUserHealthFactor = _healthFactor(user);
@@ -591,9 +565,7 @@ contract DSCEngine is ReentrancyGuard, Ownable {
         uint256 amountCollateral,
         address from,
         address to
-    )
-        private
-    {
+    ) private {
         // Removes `amount` of `tokenCollateral` from `from`'s deposited balance and transfers it to `to`.
         // Used for both user redemption (from = user, to = user) and liquidation (from = user, to = liquidator).
         s_collateralDeposited[from][tokenCollateralAddress] -= amountCollateral;
@@ -601,7 +573,11 @@ contract DSCEngine is ReentrancyGuard, Ownable {
         IERC20(tokenCollateralAddress).safeTransfer(to, amountCollateral);
     }
 
-    function _burnDsc(uint256 amountDscToBurn, address onBehalfOf, address dscFrom) private {
+    function _burnDsc(
+        uint256 amountDscToBurn,
+        address onBehalfOf,
+        address dscFrom
+    ) private {
         uint256 minted = s_DSCMinted[onBehalfOf];
         if (minted < amountDscToBurn) revert DSCEngine__BurnAmountExceedsBalance();
 
@@ -617,14 +593,19 @@ contract DSCEngine is ReentrancyGuard, Ownable {
     // Internal & Private View & Pure Functions //
     //////////////////////////////////////////////
 
-    function _revertIfHealthFactorIsBroken(address user) internal view {
+    function _revertIfHealthFactorIsBroken(
+        address user
+    ) internal view {
         uint256 userHealthFactor = _healthFactor(user);
         if (userHealthFactor < MIN_HEALTH_FACTOR) {
             revert DSCEngine__BreaksHealthFactor(userHealthFactor);
         }
     }
 
-    function _flashFee(address token, uint256 amount) internal view returns (uint256) {
+    function _flashFee(
+        address token,
+        uint256 amount
+    ) internal view returns (uint256) {
         if (token != address(i_dsc)) revert DSCEngine__UnsupportedFlashToken();
         if (amount == 0 || s_flashFeeBps == 0) return 0;
         return Math.mulDiv(amount, s_flashFeeBps, BPS_PRECISION, Math.Rounding.Ceil);
@@ -633,26 +614,22 @@ contract DSCEngine is ReentrancyGuard, Ownable {
     function _calculateHealthFactor(
         uint256 totalDscMinted,
         uint256 collateralValueInUsd
-    )
-        internal
-        pure
-        returns (uint256)
-    {
+    ) internal pure returns (uint256) {
         if (totalDscMinted == 0) return type(uint256).max;
         uint256 collateralAdjustedForThreshold = (collateralValueInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
         return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
     }
 
-    function _getAccountInformation(address user)
-        private
-        view
-        returns (uint256 totalDscMinted, uint256 collateralValueInUsd)
-    {
+    function _getAccountInformation(
+        address user
+    ) private view returns (uint256 totalDscMinted, uint256 collateralValueInUsd) {
         totalDscMinted = s_DSCMinted[user];
         collateralValueInUsd = getAccountCollateralValue(user);
     }
 
-    function _healthFactor(address user) private view returns (uint256) {
+    function _healthFactor(
+        address user
+    ) private view returns (uint256) {
         (uint256 totalDscMinted, uint256 collateralValueInUsd) = _getAccountInformation(user);
         return _calculateHealthFactor(totalDscMinted, collateralValueInUsd);
     }
@@ -660,7 +637,10 @@ contract DSCEngine is ReentrancyGuard, Ownable {
     // Get latest price for `token` in USD. OracleLib ensures the price is fresh (not older than maxPriceAge) and within
     // preset bounds (not zero or absurdly out of range). If the price is stale or invalid, this call will revert
     // (protecting the system from outdated prices).
-    function _getUsdValue(address token, uint256 amount) private view isAllowedToken(token) returns (uint256) {
+    function _getUsdValue(
+        address token,
+        uint256 amount
+    ) private view isAllowedToken(token) returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
         uint256 maxPriceAge = s_maxPriceAge[token];
         if (maxPriceAge == 0) {
@@ -720,12 +700,7 @@ contract DSCEngine is ReentrancyGuard, Ownable {
     function getTokenAmountFromUsd(
         address token,
         uint256 usdAmountInWei
-    )
-        public
-        view
-        isAllowedToken(token)
-        returns (uint256)
-    {
+    ) public view isAllowedToken(token) returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
 
         uint256 maxPriceAge = s_maxPriceAge[token];
@@ -742,14 +717,15 @@ contract DSCEngine is ReentrancyGuard, Ownable {
 
         uint256 normalizedPrice = (uint256(price) * PRECISION) / (BASE_TEN ** feedDecimals);
 
-        uint256 tokenAmount =
-            Math.mulDiv(usdAmountInWei, BASE_TEN ** tokenDecimals, normalizedPrice, Math.Rounding.Ceil);
+        uint256 tokenAmount = Math.mulDiv(usdAmountInWei, BASE_TEN ** tokenDecimals, normalizedPrice, Math.Rounding.Ceil);
 
         return tokenAmount;
     }
 
     // Sum all collateral deposits by the user, converted to USD. (Iterates over all allowed collateral types)
-    function getAccountCollateralValue(address user) public view returns (uint256 totalCollateralValueInUsd) {
+    function getAccountCollateralValue(
+        address user
+    ) public view returns (uint256 totalCollateralValueInUsd) {
         for (uint256 i = 0; i < s_collateralTokens.length; i++) {
             address token = s_collateralTokens[i];
             uint256 amount = s_collateralDeposited[user][token];
@@ -758,7 +734,9 @@ contract DSCEngine is ReentrancyGuard, Ownable {
         return totalCollateralValueInUsd;
     }
 
-    function maxFlashLoan(address token) external view returns (uint256) {
+    function maxFlashLoan(
+        address token
+    ) external view returns (uint256) {
         if (token != address(i_dsc)) return 0;
         return _maxFlashLoanInternal();
     }
@@ -770,7 +748,10 @@ contract DSCEngine is ReentrancyGuard, Ownable {
      * @param amount The amount of tokens to borrow.
      * loan.
      */
-    function flashFee(address token, uint256 amount) external view returns (uint256) {
+    function flashFee(
+        address token,
+        uint256 amount
+    ) external view returns (uint256) {
         if (token != address(i_dsc) || amount == 0) return 0;
         return _flashFee(token, amount);
     }
@@ -782,31 +763,33 @@ contract DSCEngine is ReentrancyGuard, Ownable {
     function calculateHealthFactor(
         uint256 totalDscMinted,
         uint256 collateralValueInUsd
-    )
-        external
-        pure
-        returns (uint256)
-    {
+    ) external pure returns (uint256) {
         return _calculateHealthFactor(totalDscMinted, collateralValueInUsd);
     }
 
-    function getUsdValue(address token, uint256 amount) external view returns (uint256) {
+    function getUsdValue(
+        address token,
+        uint256 amount
+    ) external view returns (uint256) {
         return _getUsdValue(token, amount);
     }
 
-    function getAccountInformation(address user)
-        external
-        view
-        returns (uint256 totalDscMinted, uint256 collateralValueInUsd)
-    {
+    function getAccountInformation(
+        address user
+    ) external view returns (uint256 totalDscMinted, uint256 collateralValueInUsd) {
         (totalDscMinted, collateralValueInUsd) = _getAccountInformation(user);
     }
 
-    function getCollateralBalanceOfUser(address user, address token) external view returns (uint256) {
+    function getCollateralBalanceOfUser(
+        address user,
+        address token
+    ) external view returns (uint256) {
         return s_collateralDeposited[user][token];
     }
 
-    function getHealthFactor(address user) external view returns (uint256) {
+    function getHealthFactor(
+        address user
+    ) external view returns (uint256) {
         return _healthFactor(user);
     }
 
@@ -814,7 +797,9 @@ contract DSCEngine is ReentrancyGuard, Ownable {
         return address(i_dsc);
     }
 
-    function getCollateralTokenPriceFeed(address token) external view returns (address) {
+    function getCollateralTokenPriceFeed(
+        address token
+    ) external view returns (address) {
         return s_priceFeeds[token];
     }
 
@@ -834,7 +819,9 @@ contract DSCEngine is ReentrancyGuard, Ownable {
         return address(flashMinter);
     }
 
-    function getMinDebtThreshold(address token) external view returns (uint256) {
+    function getMinDebtThreshold(
+        address token
+    ) external view returns (uint256) {
         return s_minDebtThreshold[token];
     }
 
@@ -842,15 +829,21 @@ contract DSCEngine is ReentrancyGuard, Ownable {
         return s_flashFeeBps;
     }
 
-    function getFeedDecimals(address token) external view returns (uint8) {
+    function getFeedDecimals(
+        address token
+    ) external view returns (uint8) {
         return s_feedDecimals[token];
     }
 
-    function getTokenDecimals(address token) external view returns (uint8) {
+    function getTokenDecimals(
+        address token
+    ) external view returns (uint8) {
         return s_tokenDecimals[token];
     }
 
-    function getMaxPriceAge(address token) external view returns (uint256) {
+    function getMaxPriceAge(
+        address token
+    ) external view returns (uint256) {
         return s_maxPriceAge[token];
     }
 

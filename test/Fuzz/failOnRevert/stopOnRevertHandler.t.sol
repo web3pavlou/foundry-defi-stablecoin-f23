@@ -31,7 +31,10 @@ contract StopOnRevertHandler is Test {
     bool public mintedWithPoorHealthFactor;
     uint256 public mintSuccessCount;
 
-    constructor(DSCEngine _dscEngine, DWebThreePavlouStableCoin _dsc) {
+    constructor(
+        DSCEngine _dscEngine,
+        DWebThreePavlouStableCoin _dsc
+    ) {
         dscEngine = _dscEngine;
         dsc = _dsc;
 
@@ -50,21 +53,30 @@ contract StopOnRevertHandler is Test {
         return s_actors.length();
     }
 
-    function actorAt(uint256 index) external view returns (address) {
+    function actorAt(
+        uint256 index
+    ) external view returns (address) {
         return s_actors.at(index); // Reverts if out of bounds
     }
 
-    function _addActor(address actor) internal {
+    function _addActor(
+        address actor
+    ) internal {
         if (actor != address(0)) s_actors.add(actor);
     }
 
-    function _pickActor(uint256 actorSeed) internal view returns (address) {
+    function _pickActor(
+        uint256 actorSeed
+    ) internal view returns (address) {
         uint256 len = s_actors.length();
         if (len == 0) return address(0);
         return s_actors.at(actorSeed % len);
     }
 
-    function _pickVictimNotSelf(uint256 actorSeed, address self) internal view returns (address) {
+    function _pickVictimNotSelf(
+        uint256 actorSeed,
+        address self
+    ) internal view returns (address) {
         uint256 len = s_actors.length();
         if (len == 0) return address(0);
 
@@ -83,22 +95,31 @@ contract StopOnRevertHandler is Test {
     ///////////////////////
     /// Helper Functions //
     ///////////////////////
-    function _getCollateralFromSeed(uint256 collateralSeed) private view returns (ERC20Mock) {
+    function _getCollateralFromSeed(
+        uint256 collateralSeed
+    ) private view returns (ERC20Mock) {
         return (collateralSeed % 2 == 0) ? weth : wbtc;
     }
 
-    function _maxTokenAmount(address token) internal view returns (uint256) {
+    function _maxTokenAmount(
+        address token
+    ) internal view returns (uint256) {
         uint8 dec = dscEngine.getTokenDecimals(token);
         return MAX_WHOLE_TOKENS * (10 ** uint256(dec));
     }
 
-    function _maxPriceAnswer(address token) internal view returns (uint256) {
+    function _maxPriceAnswer(
+        address token
+    ) internal view returns (uint256) {
         uint8 fDec = dscEngine.getFeedDecimals(token);
         uint256 scale = 10 ** uint256(fDec);
         return 1_000_000 * scale;
     }
 
-    function _victimIsLiquidatable(uint256 debt, uint256 collUsd) internal view returns (bool) {
+    function _victimIsLiquidatable(
+        uint256 debt,
+        uint256 collUsd
+    ) internal view returns (bool) {
         if (debt == 0) return false;
 
         uint256 hf = dscEngine.calculateHealthFactor(debt, collUsd);
@@ -119,11 +140,7 @@ contract StopOnRevertHandler is Test {
         uint256 victimDebt,
         uint256 debtToCover,
         uint256 maxDebt
-    )
-        internal
-        view
-        returns (uint256)
-    {
+    ) internal view returns (uint256) {
         uint256 minDebtThreshold = dscEngine.getMinDebtThreshold(collateral);
         if (minDebtThreshold == 0) return debtToCover;
 
@@ -141,11 +158,7 @@ contract StopOnRevertHandler is Test {
         address collateral,
         uint256 victimTokenBal,
         uint256 debtToCover
-    )
-        internal
-        view
-        returns (bool)
-    {
+    ) internal view returns (bool) {
         uint256 baseTokens = dscEngine.getTokenAmountFromUsd(collateral, debtToCover);
         uint256 bonus = dscEngine.getLiquidationBonus();
         uint256 prec = dscEngine.getLiquidationPrecision();
@@ -164,7 +177,10 @@ contract StopOnRevertHandler is Test {
     ///////////////
     // DSCEngine //
     ///////////////
-    function mintAndDepositCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
+    function mintAndDepositCollateral(
+        uint256 collateralSeed,
+        uint256 amountCollateral
+    ) public {
         _addActor(msg.sender);
         // must be more than 0
         ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
@@ -183,7 +199,9 @@ contract StopOnRevertHandler is Test {
         vm.stopPrank();
     }
 
-    function mintDsc(uint256 amountDscToMint) public {
+    function mintDsc(
+        uint256 amountDscToMint
+    ) public {
         _addActor(msg.sender);
 
         // pick someone who actually exists in the system
@@ -211,7 +229,10 @@ contract StopOnRevertHandler is Test {
         maxTotalSupplySeen = (ts > maxTotalSupplySeen) ? ts : maxTotalSupplySeen;
     }
 
-    function redeemCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
+    function redeemCollateral(
+        uint256 collateralSeed,
+        uint256 amountCollateral
+    ) public {
         _addActor(msg.sender);
         ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
         uint256 maxCollateral = dscEngine.getCollateralBalanceOfUser(msg.sender, address(collateral));
@@ -235,7 +256,9 @@ contract StopOnRevertHandler is Test {
         dscEngine.redeemCollateral(address(collateral), amountCollateral);
     }
 
-    function burnDsc(uint256 amountDsc) public {
+    function burnDsc(
+        uint256 amountDsc
+    ) public {
         _addActor(msg.sender);
 
         (uint256 totalDscMinted,) = dscEngine.getAccountInformation(msg.sender);
@@ -253,7 +276,11 @@ contract StopOnRevertHandler is Test {
         vm.stopPrank();
     }
 
-    function liquidate(uint256 collateralSeed, uint256 victimSeed, uint256 debtToCover) public {
+    function liquidate(
+        uint256 collateralSeed,
+        uint256 victimSeed,
+        uint256 debtToCover
+    ) public {
         _addActor(msg.sender);
 
         address victim = _pickVictimNotSelf(victimSeed, msg.sender);
@@ -289,7 +316,10 @@ contract StopOnRevertHandler is Test {
     /////////////////////////////
     // DecentralizedStableCoin //
     /////////////////////////////
-    function transferDsc(uint256 amountDsc, address to) public {
+    function transferDsc(
+        uint256 amountDsc,
+        address to
+    ) public {
         _addActor(msg.sender);
         if (to == address(0)) to = address(1);
         _addActor(to);
@@ -304,7 +334,10 @@ contract StopOnRevertHandler is Test {
     /////////////////////////////
     // Aggregator //
     /////////////////////////////
-    function updateCollateralPrice(uint96 newPriceUsd, uint256 collateralSeed) public {
+    function updateCollateralPrice(
+        uint96 newPriceUsd,
+        uint256 collateralSeed
+    ) public {
         ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
         MockV3Aggregator feed = MockV3Aggregator(dscEngine.getCollateralTokenPriceFeed(address(collateral)));
 

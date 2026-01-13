@@ -39,7 +39,10 @@ contract ContinueOnRevertHandler is Test {
     // Track minted debt per actor WITHOUT calling oracle-dependent getters
     mapping(address => uint256) private s_trackedDebt;
 
-    constructor(DSCEngine _dscEngine, DWebThreePavlouStableCoin _dsc) {
+    constructor(
+        DSCEngine _dscEngine,
+        DWebThreePavlouStableCoin _dsc
+    ) {
         dscEngine = _dscEngine;
         dsc = _dsc;
 
@@ -58,25 +61,36 @@ contract ContinueOnRevertHandler is Test {
         return s_actors.length();
     }
 
-    function actorAt(uint256 i) external view returns (address) {
+    function actorAt(
+        uint256 i
+    ) external view returns (address) {
         return s_actors.at(i);
     }
 
-    function trackedDebt(address a) external view returns (uint256) {
+    function trackedDebt(
+        address a
+    ) external view returns (uint256) {
         return s_trackedDebt[a];
     }
 
-    function _addActor(address a) internal {
+    function _addActor(
+        address a
+    ) internal {
         if (a != address(0)) s_actors.add(a);
     }
 
-    function _pickActor(uint256 seed) internal view returns (address) {
+    function _pickActor(
+        uint256 seed
+    ) internal view returns (address) {
         uint256 len = s_actors.length();
         if (len == 0) return address(0);
         return s_actors.at(seed % len);
     }
 
-    function _pickVictimNotSelf(uint256 seed, address self) internal view returns (address) {
+    function _pickVictimNotSelf(
+        uint256 seed,
+        address self
+    ) internal view returns (address) {
         uint256 len = s_actors.length();
         if (len == 0) return address(0);
 
@@ -88,16 +102,22 @@ contract ContinueOnRevertHandler is Test {
         return v;
     }
 
-    function _getCollateralFromSeed(uint256 seed) internal view returns (ERC20Mock) {
+    function _getCollateralFromSeed(
+        uint256 seed
+    ) internal view returns (ERC20Mock) {
         return (seed % 2 == 0) ? weth : wbtc;
     }
 
-    function _maxTokenAmount(address token) internal view returns (uint256) {
+    function _maxTokenAmount(
+        address token
+    ) internal view returns (uint256) {
         uint8 dec = dscEngine.getTokenDecimals(token);
         return MAX_WHOLE_TOKENS * (10 ** uint256(dec));
     }
 
-    function _tryHealthFactor(address user) internal view returns (bool ok, uint256 hf) {
+    function _tryHealthFactor(
+        address user
+    ) internal view returns (bool ok, uint256 hf) {
         try dscEngine.getHealthFactor(user) returns (uint256 v) {
             return (true, v);
         } catch {
@@ -109,7 +129,10 @@ contract ContinueOnRevertHandler is Test {
     // Actions (targeted by invariant fuzzer)
     // -------------------------
 
-    function mintAndDepositCollateral(uint256 collateralSeed, uint256 amountCollateral) external {
+    function mintAndDepositCollateral(
+        uint256 collateralSeed,
+        uint256 amountCollateral
+    ) external {
         _addActor(msg.sender);
 
         ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
@@ -125,7 +148,9 @@ contract ContinueOnRevertHandler is Test {
         vm.stopPrank();
     }
 
-    function mintDsc(uint256 amountDscToMint) external {
+    function mintDsc(
+        uint256 amountDscToMint
+    ) external {
         _addActor(msg.sender);
 
         // don’t only mint from msg.sender (often has no collateral). pick an existing actor
@@ -152,7 +177,9 @@ contract ContinueOnRevertHandler is Test {
         vm.stopPrank();
     }
 
-    function burnDsc(uint256 amountDsc) external {
+    function burnDsc(
+        uint256 amountDsc
+    ) external {
         _addActor(msg.sender);
 
         uint256 bal = dsc.balanceOf(msg.sender);
@@ -170,7 +197,10 @@ contract ContinueOnRevertHandler is Test {
         vm.stopPrank();
     }
 
-    function redeemCollateral(uint256 collateralSeed, uint256 amountCollateral) external {
+    function redeemCollateral(
+        uint256 collateralSeed,
+        uint256 amountCollateral
+    ) external {
         _addActor(msg.sender);
 
         ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
@@ -187,7 +217,10 @@ contract ContinueOnRevertHandler is Test {
         vm.stopPrank();
     }
 
-    function transferDsc(uint256 amountDsc, address to) external {
+    function transferDsc(
+        uint256 amountDsc,
+        address to
+    ) external {
         if (to == address(0)) to = address(1);
         _addActor(msg.sender);
         _addActor(to);
@@ -199,7 +232,11 @@ contract ContinueOnRevertHandler is Test {
         dsc.transfer(to, amountDsc);
     }
 
-    function liquidate(uint256 collateralSeed, uint256 victimSeed, uint256 debtToCover) external {
+    function liquidate(
+        uint256 collateralSeed,
+        uint256 victimSeed,
+        uint256 debtToCover
+    ) external {
         _addActor(msg.sender);
 
         address victim = _pickVictimNotSelf(victimSeed, msg.sender);
@@ -223,10 +260,7 @@ contract ContinueOnRevertHandler is Test {
             // update ghost debt using emitted event
             Vm.Log[] memory logs = vm.getRecordedLogs();
             for (uint256 i = 0; i < logs.length; i++) {
-                if (
-                    logs[i].emitter == address(dscEngine) && logs[i].topics.length > 0
-                        && logs[i].topics[0] == LIQUIDATION_SIG
-                ) {
+                if (logs[i].emitter == address(dscEngine) && logs[i].topics.length > 0 && logs[i].topics[0] == LIQUIDATION_SIG) {
                     //data = abi.encode(debtBurned,collateralSeized)
                     (uint256 debtBurned,) = abi.decode(logs[i].data, (uint256, uint256));
 
@@ -248,7 +282,10 @@ contract ContinueOnRevertHandler is Test {
 
     //known issue:Solvency is not guaranteed under rapid drawdowns (crash risk).
     //So we assume oracle is valid and prices are bounded to save "runs"
-    function updateCollateralPrice(uint256 collateralSeed, uint256 scaleBps) external {
+    function updateCollateralPrice(
+        uint256 collateralSeed,
+        uint256 scaleBps
+    ) external {
         ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
         MockV3Aggregator feed = MockV3Aggregator(dscEngine.getCollateralTokenPriceFeed(address(collateral)));
         if (s_actors.length() == 0) return;

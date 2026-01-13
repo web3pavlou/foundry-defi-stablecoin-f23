@@ -45,15 +45,10 @@ library OracleLib {
     function staleCheckLatestRoundData(
         AggregatorV3Interface priceFeed,
         uint256 maxPriceAge
-    )
-        public
-        view
-        returns (uint80, int256, uint256, uint256, uint80)
-    {
+    ) public view returns (uint80, int256, uint256, uint256, uint80) {
         _checkSequencerIfApplicable();
 
-        (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) =
-            priceFeed.latestRoundData();
+        (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = priceFeed.latestRoundData();
         if (updatedAt == 0) {
             revert OracleLib__PriceNotUpdatedProperly();
         }
@@ -117,7 +112,9 @@ library OracleLib {
         }
     }
 
-    function _getPriceBounds(AggregatorV3Interface priceFeed) private view returns (int256 min, int256 max) {
+    function _getPriceBounds(
+        AggregatorV3Interface priceFeed
+    ) private view returns (int256 min, int256 max) {
         // Default - no bounds
         min = type(int256).min;
         max = type(int256).max;
@@ -182,21 +179,13 @@ library OracleLib {
 
     function getTimeOut(
         AggregatorV3Interface /*chainlinkFeed */
-    )
-        public
-        pure
-        returns (uint256)
-    {
+    ) public pure returns (uint256) {
         return TIMEOUT;
     }
 
     function getGracePeriod(
         AggregatorV3Interface /* chainlinkFeed */
-    )
-        public
-        pure
-        returns (uint256)
-    {
+    ) public pure returns (uint256) {
         return GRACE_PERIOD_TIME;
     }
 }

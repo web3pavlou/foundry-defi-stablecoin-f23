@@ -55,8 +55,7 @@ contract StopOnRevertInvariants is StdInvariant, Test {
         DeployDSC deployer = new DeployDSC();
         (dsc, dsce, helperConfig, flashMinter) = deployer.run();
 
-        (ethUsdPriceFeed, btcUsdPriceFeed, weth, wbtc, deployerKey, wethMaxPriceAge, wbtcMaxPriceAge) =
-            helperConfig.activeNetworkConfig();
+        (ethUsdPriceFeed, btcUsdPriceFeed, weth, wbtc, deployerKey, wethMaxPriceAge, wbtcMaxPriceAge) = helperConfig.activeNetworkConfig();
 
         handler = new StopOnRevertHandler(dsce, dsc);
         targetContract(address(handler));

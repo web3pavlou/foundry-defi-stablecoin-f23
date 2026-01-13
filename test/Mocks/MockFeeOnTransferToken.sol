@@ -13,27 +13,44 @@ contract MockFeeOnTransferToken {
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
-    constructor(uint8 _decimals, uint256 _feeBps, address _feeRecipient) {
+    constructor(
+        uint8 _decimals,
+        uint256 _feeBps,
+        address _feeRecipient
+    ) {
         decimals = _decimals;
         feeBps = _feeBps;
         feeRecipient = _feeRecipient;
     }
 
-    function mint(address to, uint256 amount) external {
+    function mint(
+        address to,
+        uint256 amount
+    ) external {
         balanceOf[to] += amount;
     }
 
-    function approve(address spender, uint256 amount) external returns (bool) {
+    function approve(
+        address spender,
+        uint256 amount
+    ) external returns (bool) {
         allowance[msg.sender][spender] = amount;
         return true;
     }
 
-    function transfer(address to, uint256 amount) external returns (bool) {
+    function transfer(
+        address to,
+        uint256 amount
+    ) external returns (bool) {
         _transfer(msg.sender, to, amount);
         return true;
     }
 
-    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) external returns (bool) {
         uint256 allowed = allowance[from][msg.sender];
         require(allowed >= amount, "allowance");
         allowance[from][msg.sender] = allowed - amount;
@@ -42,7 +59,11 @@ contract MockFeeOnTransferToken {
         return true;
     }
 
-    function _transfer(address from, address to, uint256 amount) internal {
+    function _transfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal {
         require(balanceOf[from] >= amount, "balance");
         balanceOf[from] -= amount;
 

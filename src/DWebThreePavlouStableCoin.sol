@@ -40,9 +40,13 @@ contract DWebThreePavlouStableCoin is ERC20Burnable, Ownable {
     /**
      * @dev Sets the initial owner of the contract to the address provided
      */
-    constructor(address owner) ERC20("DWebThreePavlouSC", "DWTPSC") Ownable(owner) { }
+    constructor(
+        address owner
+    ) ERC20("DWebThreePavlouSC", "DWTPSC") Ownable(owner) { }
 
-    function burn(uint256 _amount) public override onlyMinterOrOwner {
+    function burn(
+        uint256 _amount
+    ) public override onlyMinterOrOwner {
         uint256 balance = balanceOf(msg.sender);
         if (_amount <= 0) {
             revert DWebThreePavlouSC__MustBeMoreThanZero();
@@ -53,11 +57,17 @@ contract DWebThreePavlouStableCoin is ERC20Burnable, Ownable {
         super.burn(_amount);
     }
 
-    function burnFrom(address, uint256) public pure override {
+    function burnFrom(
+        address,
+        uint256
+    ) public pure override {
         revert DWebThreePavlouSC__BlockFunction();
     }
 
-    function mint(address _to, uint256 _amount) external onlyMinterOrOwner returns (bool) {
+    function mint(
+        address _to,
+        uint256 _amount
+    ) external onlyMinterOrOwner returns (bool) {
         if (_to == address(0)) {
             revert DWebThreePavlouSC__NotZeroAddress();
         }
@@ -69,7 +79,9 @@ contract DWebThreePavlouStableCoin is ERC20Burnable, Ownable {
     }
 
     /// @notice Sets a new authorized minter address for the stablecoin.
-    function setMinter(address _minter) external onlyOwner {
+    function setMinter(
+        address _minter
+    ) external onlyOwner {
         emit MinterSet(minter, _minter);
         minter = _minter;
     }

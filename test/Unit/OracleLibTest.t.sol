@@ -139,13 +139,7 @@ contract OracleLibTest is Test {
         MockConfigurableAggregator feed = new MockConfigurableAggregator(DECIMALS);
 
         // answeredInRound (1) < roundId (2) => should revert
-        feed.setRoundData({
-            roundId_: 2,
-            answer_: INITIAL_ANSWER,
-            startedAt_: block.timestamp - 10,
-            updatedAt_: block.timestamp - 1,
-            answeredInRound_: 1
-        });
+        feed.setRoundData({ roundId_: 2, answer_: INITIAL_ANSWER, startedAt_: block.timestamp - 10, updatedAt_: block.timestamp - 1, answeredInRound_: 1 });
 
         vm.expectRevert(OracleLib.OracleLib__PriceNotUpdatedProperly.selector);
         AggregatorV3Interface(address(feed)).staleCheckLatestRoundData(maxPriceAge);
@@ -156,19 +150,9 @@ contract OracleLibTest is Test {
 
         MockConfigurableAggregator feed = new MockConfigurableAggregator(DECIMALS);
 
-        feed.setRoundData({
-            roundId_: 1,
-            answer_: 0,
-            startedAt_: block.timestamp - 10,
-            updatedAt_: block.timestamp - 1,
-            answeredInRound_: 1
-        });
+        feed.setRoundData({ roundId_: 1, answer_: 0, startedAt_: block.timestamp - 10, updatedAt_: block.timestamp - 1, answeredInRound_: 1 });
 
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                OracleLib.OracleLib__PriceOutOfBounds.selector, int256(0), type(int256).min, type(int256).max
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, int256(0), type(int256).min, type(int256).max));
 
         AggregatorV3Interface(address(feed)).staleCheckLatestRoundData(maxPriceAge);
     }
@@ -294,9 +278,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
         AggregatorV3Interface(MAINNET_ETH_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
 
@@ -318,9 +300,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
         AggregatorV3Interface(MAINNET_ETH_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
 
@@ -342,9 +322,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
         AggregatorV3Interface(ARBITRUM_ONE_ETH_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
 
@@ -366,9 +344,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
         AggregatorV3Interface(ARBITRUM_ONE_ETH_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
 
@@ -390,9 +366,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
         AggregatorV3Interface(SEPOLIA_TESTNET_ETH_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
 
@@ -414,9 +388,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
         AggregatorV3Interface(SEPOLIA_TESTNET_ETH_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
 
@@ -446,9 +418,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
         AggregatorV3Interface(ZK_SYNC_BTC_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
 
@@ -478,9 +448,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
         AggregatorV3Interface(ZK_SYNC_BTC_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
 
@@ -514,9 +482,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
         AggregatorV3Interface(ZK_SYNC_BTC_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
 
@@ -537,9 +503,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
 
         AggregatorV3Interface(MAINNET_BTC_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
@@ -561,9 +525,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
 
         AggregatorV3Interface(MAINNET_BTC_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
@@ -585,9 +547,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
 
         AggregatorV3Interface(SEPOLIA_BTC_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
@@ -609,9 +569,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
 
         AggregatorV3Interface(SEPOLIA_BTC_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
@@ -634,9 +592,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
 
         AggregatorV3Interface(ARBITRUM_ONE_BTC_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
@@ -658,9 +614,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
 
         AggregatorV3Interface(ARBITRUM_ONE_BTC_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }
@@ -688,9 +642,7 @@ contract OracleLibTest is Test {
         feed.updateAnswer(answer);
 
         vm.warp(block.timestamp + 1 seconds);
-        vm.expectRevert(
-            abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer)
-        );
+        vm.expectRevert(abi.encodeWithSelector(OracleLib.OracleLib__PriceOutOfBounds.selector, answer, minAnswer, maxAnswer));
 
         AggregatorV3Interface(ZK_SYNC_BTC_USD_PRICEFEED).staleCheckLatestRoundData(maxPriceAge);
     }

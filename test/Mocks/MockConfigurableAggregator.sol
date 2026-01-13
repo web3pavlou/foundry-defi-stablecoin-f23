@@ -13,7 +13,9 @@ contract MockConfigurableAggregator is AggregatorV3Interface {
     uint256 internal s_updatedAt;
     uint80 internal s_answeredInRound;
 
-    constructor(uint8 decimals_) {
+    constructor(
+        uint8 decimals_
+    ) {
         i_decimals = decimals_;
     }
 
@@ -23,9 +25,7 @@ contract MockConfigurableAggregator is AggregatorV3Interface {
         uint256 startedAt_,
         uint256 updatedAt_,
         uint80 answeredInRound_
-    )
-        external
-    {
+    ) external {
         s_roundId = roundId_;
         s_answer = answer_;
         s_startedAt = startedAt_;
@@ -45,7 +45,9 @@ contract MockConfigurableAggregator is AggregatorV3Interface {
         return 1;
     }
 
-    function getRoundData(uint80) external view override returns (uint80, int256, uint256, uint256, uint80) {
+    function getRoundData(
+        uint80
+    ) external view override returns (uint80, int256, uint256, uint256, uint80) {
         return (s_roundId, s_answer, s_startedAt, s_updatedAt, s_answeredInRound);
     }
 

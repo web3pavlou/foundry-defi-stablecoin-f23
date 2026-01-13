@@ -17,9 +17,13 @@ contract MockFailedTransfer is ERC20Burnable, Ownable {
     Related code changes can be viewed in this commit:
     https://github.com/OpenZeppelin/openzeppelin-contracts/commit/13d5e0466a9855e9305119ed383e54fc913fdc60
     */
-    constructor(address _initialOwner) ERC20("DecentralizedStableCoin", "DSC") Ownable(_initialOwner) { }
+    constructor(
+        address _initialOwner
+    ) ERC20("DecentralizedStableCoin", "DSC") Ownable(_initialOwner) { }
 
-    function burn(uint256 _amount) public override onlyOwner {
+    function burn(
+        uint256 _amount
+    ) public override onlyOwner {
         uint256 balance = balanceOf(msg.sender);
         if (_amount <= 0) {
             revert DecentralizedStableCoin__AmountMustBeMoreThanZero();
@@ -30,7 +34,10 @@ contract MockFailedTransfer is ERC20Burnable, Ownable {
         super.burn(_amount);
     }
 
-    function mint(address account, uint256 amount) public {
+    function mint(
+        address account,
+        uint256 amount
+    ) public {
         _mint(account, amount);
     }
 
@@ -38,12 +45,7 @@ contract MockFailedTransfer is ERC20Burnable, Ownable {
         address,
         /*recipient*/
         uint256 /*amount*/
-    )
-        public
-        pure
-        override
-        returns (bool)
-    {
+    ) public pure override returns (bool) {
         return false;
     }
 }

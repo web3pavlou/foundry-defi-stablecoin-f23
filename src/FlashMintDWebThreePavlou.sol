@@ -40,16 +40,12 @@ contract FlashMintDWebThreePavlou is ReentrancyGuard, IERC3156FlashLender {
 
     event FlashMinterDeployed(address engine, address token);
 
-    event FlashLoanExecuted(
-        address indexed initiator,
-        address indexed receiver,
-        address indexed token,
-        uint256 amount,
-        uint256 fee,
-        address feeRecipient
-    );
+    event FlashLoanExecuted(address indexed initiator, address indexed receiver, address indexed token, uint256 amount, uint256 fee, address feeRecipient);
 
-    constructor(address _dscEngine, address _dscToken) {
+    constructor(
+        address _dscEngine,
+        address _dscToken
+    ) {
         if (_dscEngine == address(0) || _dscToken == address(0)) revert FlashMint__ZeroAddress();
         i_dsce = DSCEngine(_dscEngine);
         i_dsc = DWebThreePavlouStableCoin(_dscToken);
@@ -61,13 +57,18 @@ contract FlashMintDWebThreePavlou is ReentrancyGuard, IERC3156FlashLender {
     // IERC3156 external view functions //
     //////////////////////////////////////
 
-    function maxFlashLoan(address token) external view override returns (uint256) {
+    function maxFlashLoan(
+        address token
+    ) external view override returns (uint256) {
         if (token != address(i_dsc)) return 0;
         // DSCEngine is the risk manager
         return i_dsce.maxFlashLoan(token);
     }
 
-    function flashFee(address token, uint256 amount) external view override returns (uint256) {
+    function flashFee(
+        address token,
+        uint256 amount
+    ) external view override returns (uint256) {
         if (token != address(i_dsc)) revert FlashMint__BadToken();
         if (amount == 0) return 0;
         return i_dsce.flashFee(token, amount);
@@ -82,12 +83,7 @@ contract FlashMintDWebThreePavlou is ReentrancyGuard, IERC3156FlashLender {
         address token,
         uint256 amount,
         bytes calldata data
-    )
-        external
-        override
-        nonReentrant
-        returns (bool)
-    {
+    ) external override nonReentrant returns (bool) {
         if (token != address(i_dsc)) revert FlashMint__BadToken();
         if (amount == 0) revert FlashMint__MoreThanZero();
 

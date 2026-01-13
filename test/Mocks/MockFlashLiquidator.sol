@@ -17,7 +17,14 @@ contract MockFlashLiquidator is IERC3156FlashBorrower {
 
     bytes32 public constant CALLBACK_SUCCESS = keccak256("ERC3156FlashBorrower.onFlashLoan");
 
-    constructor(address _dsce, address _lender, address _dsc, address _weth, address _dex, address _victim) {
+    constructor(
+        address _dsce,
+        address _lender,
+        address _dsc,
+        address _weth,
+        address _dex,
+        address _victim
+    ) {
         dsce = DSCEngine(_dsce);
         lender = FlashMintDWebThreePavlou(_lender);
         dsc = IERC20(_dsc);
@@ -32,10 +39,7 @@ contract MockFlashLiquidator is IERC3156FlashBorrower {
         uint256 amount,
         uint256 fee,
         bytes calldata /* data */
-    )
-        external
-        returns (bytes32)
-    {
+    ) external returns (bytes32) {
         require(msg.sender == address(lender), "only lender");
         require(token == address(dsc), "bad token");
 

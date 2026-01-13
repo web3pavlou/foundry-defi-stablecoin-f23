@@ -11,26 +11,10 @@ contract DeployDSC is Script {
     // address[] public tokenAddresses;
     // address[] public priceFeedAddresses;
 
-    function run()
-        external
-        returns (
-            DWebThreePavlouStableCoin dsc,
-            DSCEngine dsce,
-            HelperConfig helperConfig,
-            FlashMintDWebThreePavlou flashMinter
-        )
-    {
+    function run() external returns (DWebThreePavlouStableCoin dsc, DSCEngine dsce, HelperConfig helperConfig, FlashMintDWebThreePavlou flashMinter) {
         helperConfig = new HelperConfig(); // This comes with our mocks!
 
-        (
-            address wethUsdPriceFeed,
-            address wbtcUsdPriceFeed,
-            address weth,
-            address wbtc,
-            uint256 deployerKey,
-            uint256 wethMaxPriceAge,
-            uint256 wbtcMaxPriceAge
-        ) = helperConfig.activeNetworkConfig();
+        (address wethUsdPriceFeed, address wbtcUsdPriceFeed, address weth, address wbtc, uint256 deployerKey, uint256 wethMaxPriceAge, uint256 wbtcMaxPriceAge) = helperConfig.activeNetworkConfig();
 
         address[] memory tokenAddresses = new address[](2);
         tokenAddresses[0] = weth;
