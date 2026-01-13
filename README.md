@@ -152,35 +152,36 @@ forge fmt
 
 ## Deployment
 
-Deployment script: `script/DeployDSC.s.sol`
+Deployment script: `script/DeployDSC.s.sol`  
+Entry point: `DeployDSC.run()`
 
+### Safer key management (Foundry keystore + --account)
 
+Instead of putting a raw private key in `.env`, import your deployer into Foundry’s keystore and deploy via `--account`.
 
-`DeployDSC.run()`:
+1) Set RPC URL (example: Sepolia)
+```bash
+export SEPOLIA_RPC_URL="..."
+````
 
+2. Import your deployer into Foundry keystore (stored under `~/.foundry/keystores`)
 
+```bash
+cast wallet import sepolia-deployer --interactive
+```
 
-### Example (Sepolia)
-
-Set:
-
-* `SEPOLIA_RPC_URL`
-* `PRIVATE_KEY`
-
-Then:
+3. Deploy using the keystore account
 
 ```bash
 forge script script/DeployDSC.s.sol:DeployDSC \
   --rpc-url $SEPOLIA_RPC_URL \
-  --private-key $PRIVATE_KEY \
-  --broadcast
+  --broadcast \
+  --account sepolia-deployer
 ```
 
-(If you use a Makefile wrapper:)
+> Tip: You can also set `ETH_KEYSTORE_ACCOUNT=sepolia-deployer` instead of passing `--account` each time.
 
-```bash
-make deploy ARGS="--network sepolia"
-```
+
 
 ---
 
