@@ -43,12 +43,19 @@ contract HelperConfig is Script {
     }
 
     function getSepoliaEthConfig() public view returns (NetworkConfig memory sepoliaNetworkConfig) {
+        uint256 key;
+        try vm.envUint("PRIVATE_KEY") returns (uint256 k) {
+            key = k;
+        } catch {
+            key = 1; // fallback so tests/CI don't revert if chainid is set to sepolia
+        }
+
         sepoliaNetworkConfig = NetworkConfig({
             wethUsdPriceFeed: 0x694AA1769357215DE4FAC081bf1f309aDC325306,
             wbtcUsdPriceFeed: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43,
             weth: 0xdd13E55209Fd76AfE204dBda4007C227904f0a81,
             wbtc: 0x29f2D40B0605204364af54EC677bD022dA425d03,
-            deployerKey: vm.envUint("PRIVATE_KEY"),
+            deployerKey: key,
             wethMaxPriceAge: 3 hours,
             wbtcMaxPriceAge: 3 hours
         });
@@ -58,7 +65,17 @@ contract HelperConfig is Script {
         if (activeNetworkConfig.wethUsdPriceFeed != address(0)) {
             return activeNetworkConfig;
         }
-        vm.startBroadcast();
+
+        uint256 key;
+        try vm.envUint("DEFAULT_ANVIL_PRIVATE_KEY") returns (uint256 k) {
+            key = k;
+        } catch {
+            // CI / tests: no env var -> fall back to a deterministic key
+            key = 1;
+        }
+
+        vm.startBroadcast(key);
+
         MockV3Aggregator ethUsdPriceFeed = new MockV3Aggregator(FEED_DECIMALS, ETH_USD_PRICE);
 
         ERC20DecimalsMock wethMock = new ERC20DecimalsMock("WETH", "WETH", WETH_DECIMALS);
@@ -70,12 +87,13 @@ contract HelperConfig is Script {
         wbtcMock.mint(msg.sender, 1000 * 10 ** WBTC_DECIMALS);
 
         vm.stopBroadcast();
+
         return anvilNetworkConfig = NetworkConfig({
             wethUsdPriceFeed: address(ethUsdPriceFeed),
             wbtcUsdPriceFeed: address(btcUsdPriceFeed),
             weth: address(wethMock),
             wbtc: address(wbtcMock),
-            deployerKey: vm.envUint("DEFAULT_ANVIL_PRIVATE_KEY"),
+            deployerKey: key,
             wethMaxPriceAge: 4 hours,
             wbtcMaxPriceAge: 4 hours
         });

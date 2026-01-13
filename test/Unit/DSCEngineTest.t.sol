@@ -2099,11 +2099,11 @@ contract DSCEngineTest is Test {
         assertEq(maxLoanUnsupported, 0);
     }
 
-    function testMaxFlashLoanReturnsZeroForWrongToken() public {
+    function testMaxFlashLoanReturnsZeroForWrongToken() public view {
         assertEq(flashMinter.maxFlashLoan(weth), 0);
     }
 
-    function testMaxFlashLoanReturnsEngineValueForDsc() public {
+    function testMaxFlashLoanReturnsEngineValueForDsc() public view {
         uint256 a = flashMinter.maxFlashLoan(address(dsc));
         uint256 b = dsce.maxFlashLoan(address(dsc));
         assertEq(a, b);
@@ -2169,7 +2169,7 @@ contract DSCEngineTest is Test {
         assertEq(expectedFee, flashFee);
     }
 
-    function testFlashFeeReturnsZeroWhenAmountIsZero() public {
+    function testFlashFeeReturnsZeroWhenAmountIsZero() public view {
         uint256 fee = flashMinter.flashFee(address(dsc), 0);
         assertEq(fee, 0);
     }
@@ -3447,7 +3447,7 @@ contract DSCEngineTest is Test {
         assertEq(dsce.getMaxPriceAge(wbtc), wbtcMaxPriceAge);
     }
 
-    function testGettersReturnCorrectAddresses() public {
+    function testGettersReturnCorrectAddresses() public view {
         assertEq(flashMinter.getDsce(), address(dsce));
         assertEq(flashMinter.getDsc(), address(dsc));
     }

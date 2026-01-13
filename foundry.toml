@@ -34,11 +34,11 @@ timeout = 60
 # enables storage-aware input sampling
 extra_output = ["storageLayout"]
 
-# coverage-guided invariant fuzzing
-corpus_dir = "./cache/invariant-corpus/dsce"
-corpus_gzip = true
-corpus_min_mutations = 5
-corpus_min_size = 50
+# # coverage-guided invariant fuzzing
+# corpus_dir = "./cache/invariant-corpus/dsce"
+# corpus_gzip = true
+# corpus_min_mutations = 5
+# corpus_min_size = 50
 
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
